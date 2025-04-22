@@ -86,7 +86,7 @@ def scatterplot(df: pd.DataFrame, target: str = 'Salary', exclude: list = None):
         exclude = ['id', 'Description', 'Job Title', target]
 
     cols = df.columns.difference(exclude)
-    n_cols = 3
+    n_cols = 2
     n_rows = math.ceil(len(cols) / n_cols)
 
     plt.figure(figsize=(6 * n_cols, 4 * n_rows))
@@ -141,3 +141,43 @@ def plot_shap_feature_importance(model, X_test_final, X_test, embedding_prefix='
     plt.figure(figsize=(10, 6))
     shap.summary_plot(shap_values_agg, X_test_final[:, :num_original + 1],
                       feature_names=all_features, plot_type=plot_type)
+
+def plot_shap_feature_importance_no_embeddings(model, X_test_final, X_test, plot_type='bar'):
+    """
+    Computes and plots SHAP feature importances, EXCLUDING embedding features.
+
+    Parameters
+    ----------
+    model : trained model
+        A fitted tree-based model compatible with SHAP.
+    X_test_final : np.ndarray
+        Test set used for prediction (post-transformation, may include embeddings).
+    X_test : pd.DataFrame
+        Original test set (pre-embedding transformation).
+    plot_type : str
+        Type of SHAP summary plot ('bar' or 'dot'). Default is 'bar'.
+    """
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X_test_final)
+
+    original_features = X_test.columns.tolist()
+    num_original = len(original_features)
+
+    # Extract SHAP values only for original features (exclude embeddings)
+    if len(np.array(shap_values).shape) == 3:  # Multi-class
+        shap_values_agg = shap_values[:, :, :num_original]
+    else:  # Single output
+        shap_values_agg = shap_values[:, :num_original]
+
+    # Plot SHAP summary (only non-embedding features)
+    plt.figure(figsize=(10, 6))
+    shap.summary_plot(
+        shap_values_agg, 
+        X_test_final[:, :num_original],  # Original feature data
+        feature_names=original_features, 
+        plot_type=plot_type,
+        show=False
+    )
+    plt.title("SHAP Feature Importance (Excluding Embeddings)", fontsize=14)
+    plt.tight_layout()
+    plt.show()
