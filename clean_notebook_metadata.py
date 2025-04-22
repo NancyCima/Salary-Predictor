@@ -1,21 +1,21 @@
 import nbformat
 
-# Ruta del archivo de entrada y salida
+# Input and output notebook paths
 input_path = "Salary_Prediction.ipynb"
 output_path = "Salary_Prediction_CLEAN.ipynb"
 
-# Cargar notebook
+# Load the notebook
 with open(input_path, "r", encoding="utf-8") as f:
     nb = nbformat.read(f, as_version=4)
 
-# Eliminar metadatos globales
+# Remove global metadata
 nb.metadata = {}
 
-# Eliminar metadatos por celda
+# Remove metadata from each cell
 for cell in nb.cells:
     cell.metadata = {}
 
-# Guardar notebook limpio
+# Save the cleaned notebook
 with open(output_path, "w", encoding="utf-8") as f:
     nbformat.write(nb, f)
 
